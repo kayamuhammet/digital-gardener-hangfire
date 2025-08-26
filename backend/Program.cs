@@ -1,10 +1,15 @@
 using Hangfire;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Connection Strings
 var hangfireConnectionString = builder.Configuration.GetConnectionString("HangfireConnection");
 var appDbConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Database Connection
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(appDbConnectionString));
 
 // Hangfire Services
 builder.Services.AddHangfire(config => config
