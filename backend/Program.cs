@@ -47,4 +47,22 @@ app.UseHangfireDashboard();
 
 app.MapControllers();
 
+// Recurring Job Manager
+var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+
+recurringJobManager.AddOrUpdate<IPlantService>(
+    "plant-watering", // Unique Id
+    service => service.WaterAllPlants(),
+    Cron.Daily); // "It is an abbreviation for ‘0 0 * * *’. It runs every midnight..
+
+recurringJobManager.AddOrUpdate<IPlantService>(
+    "plant-sunlight",
+    service => service.GiveSunlightToAllPlants(),
+    "0 */4 * * *"); // "every 4 hours"
+
+recurringJobManager.AddOrUpdate<IPlantService>(
+    "plant-health-check",
+    service => service.PerformHealthCheckAsync(),
+    Cron.Hourly); // "0 * * * *"
+
 app.Run();

@@ -4,5 +4,8 @@ namespace backend.Services
     {
         Task CreatePlantAsync(string plantType);
         Task<IEnumerable<Plant>> GetAllPlantsAsync();
+        Task WaterAllPlants();
+        Task GiveSunlightToAllPlants();
+        Task PerformHealthCheckAsync();
     }
 }
