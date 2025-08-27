@@ -9,5 +9,6 @@ public class Plant
     public int WaterLevel { get; set; }
     public int GrowthPoints { get; set; }
     public HealthStatus HealthStatus { get; set; }
+    public DateTime PlantedAt { get; set; }
 
 }

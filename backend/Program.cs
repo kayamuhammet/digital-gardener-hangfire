@@ -1,3 +1,4 @@
+using backend.Services;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,9 @@ var appDbConnectionString = builder.Configuration.GetConnectionString("DefaultCo
 // Database Connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(appDbConnectionString));
+
+// Services
+builder.Services.AddScoped<IPlantService, PlantService>();
 
 // Hangfire Services
 builder.Services.AddHangfire(config => config

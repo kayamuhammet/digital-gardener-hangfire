@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -19,7 +20,8 @@ namespace backend.Migrations
                     PlantType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     WaterLevel = table.Column<int>(type: "int", nullable: false),
                     GrowthPoints = table.Column<int>(type: "int", nullable: false),
-                    HealthStatus = table.Column<int>(type: "int", nullable: false)
+                    HealthStatus = table.Column<int>(type: "int", nullable: false),
+                    PlantedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
