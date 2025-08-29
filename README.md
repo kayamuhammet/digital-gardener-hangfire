@@ -107,7 +107,7 @@ Jobs scheduled to run after a certain delay instead of immediately.
 
 1.  **Clone the Project:**
     ```bash
-    git clone https://github.com/kayamuhammet/dijital-bahcivan-hangfire.git
+    git clone https://github.com/kayamuhammet/digital-gardener-hangfire.git
     cd backend
     ```
 
@@ -276,7 +276,7 @@ Bir olayın ardından hemen değil, belirli bir süre geçtikten sonra çalışt
 
 1.  **Projeyi Klonlayın:**
     ```bash
-    git clone https://github.com/kayamuhammet/dijital-bahcivan-hangfire.git
+    git clone https://github.com/kayamuhammet/digital-gardener-hangfire.git
     cd backend
     ```
 
