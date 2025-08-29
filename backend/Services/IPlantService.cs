@@ -7,5 +7,6 @@ namespace backend.Services
         Task WaterAllPlants();
         Task GiveSunlightToAllPlants();
         Task PerformHealthCheckAsync();
+        Task ApplyFertilizerEffectAsync(int plantId);
     }
 }

@@ -4,15 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 
 [Route("api/[controller]")]
 [ApiController]
-public class PlantController : ControllerBase
+public class PlantsController : ControllerBase
 {
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly IPlantService _plantService;
+    private readonly ILogger<PlantsController> _logger;
 
-    public PlantController(IBackgroundJobClient backgroundJobClient, IPlantService plantService)
+    public PlantsController(IBackgroundJobClient backgroundJobClient, IPlantService plantService, ILogger<PlantsController> logger)
     {
         _backgroundJobClient = backgroundJobClient;
         _plantService = plantService;
+        _logger = logger;
     }
     [HttpPost("plant-seed")]
     public IActionResult PlantNewSeed(string plantType)
@@ -26,6 +28,20 @@ public class PlantController : ControllerBase
     {
         var plants = await _plantService.GetAllPlantsAsync();
         return Ok(plants);
+    }
+
+    [HttpPost("{plantId}/fertilize")]
+    public IActionResult FertilizePlant(int plantId)
+    {
+        _logger.LogInformation("Request received to fertilize plant with Id: {PlantId}", plantId);
+
+        var jobId = _backgroundJobClient.Schedule<IPlantService>(
+            service => service.ApplyFertilizerEffectAsync(plantId),
+            TimeSpan.FromHours(2)
+        );
+
+        _logger.LogInformation("Job {JobId} scheduled to apply fertilizer effect in 2 hours for PlantId: {PlantId}", jobId, plantId);
+        return Accepted($"Job '{jobId}' has been scheduled. Fertilizer effect will be applied in 2 hours to plant {plantId}.");
     }
 
 }

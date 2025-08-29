@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services
@@ -6,10 +7,12 @@ namespace backend.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<IPlantService> _logger;
-        public PlantService(ApplicationDbContext context, ILogger<IPlantService> logger)
+        private readonly IBackgroundJobClient _backgroundJobClient;
+        public PlantService(ApplicationDbContext context, ILogger<IPlantService> logger, IBackgroundJobClient backgroundJobClient)
         {
             _context = context;
             _logger = logger;
+            _backgroundJobClient = backgroundJobClient;
         }
 
         public async Task CreatePlantAsync(string plantType)
@@ -91,31 +94,56 @@ namespace backend.Services
             foreach (var plant in plants)
             {
                 var originalStatus = plant.HealthStatus;
+                HealthStatus newStatus;
 
                 if (plant.WaterLevel < ThirstyThreshold)
                 {
-                    plant.HealthStatus = HealthStatus.Thirsty;
+                    newStatus = HealthStatus.Thirsty;
                 }
 
                 else if (plant.WaterLevel > OverwateredThreshold)
                 {
-                    plant.HealthStatus = HealthStatus.Overwatered;
+                    newStatus = HealthStatus.Overwatered;
                 }
                 else
                 {
-                    plant.HealthStatus = HealthStatus.Healthy;
+                    newStatus = HealthStatus.Healthy;
                 }
-
-                if (originalStatus != plant.HealthStatus)
+                // if unhealthy
+                if (newStatus != plant.HealthStatus)
                 {
-                    _logger.LogInformation("Plant health status changed for PlantId: {PlantId}. Old: {OldStatus}, New: {NewStatus}",
-                        plant.Id, originalStatus, plant.HealthStatus);
+                    plant.HealthStatus = newStatus;
+                    _logger.LogInformation("Plant health status changed for PlantId: {PlantId}. Old: {OldStatus}, New: {NewStatus}", plant.Id, originalStatus, plant.HealthStatus);
+
+                    if (plant.HealthStatus != HealthStatus.Healthy)
+                    {
+                        var jobId = _backgroundJobClient.Schedule<INotificationService>(
+                            service => service.CheckAndNotifyForUnhealthyPlant(plant.Id),
+                            TimeSpan.FromDays(1)
+                        );
+
+                        _logger.LogInformation("Scheduled a notification check job {JobId} for plant {PlantId} in 24 hours.", jobId, plant.Id);
+                    }
                 }
             }
 
             await _context.SaveChangesAsync();
             _logger.LogInformation("Recurring Job Finished: Health check complete for {Count} plants.", plants.Count);
 
+        }
+
+        public async Task ApplyFertilizerEffectAsync(int plantId)
+        {
+            _logger.LogInformation("Recurring Job started: Applying fertilizer effect");
+            var plant = await _context.Plants.FindAsync(plantId);
+            if (plant == null)
+            {
+                _logger.LogWarning("Delayed Job: Plant with Id {PlantId} not found. Fertilizer effect could not be applied.", plantId);
+                return;
+            }
+            plant.GrowthPoints += 25;
+            _logger.LogInformation("Growth points for PlantId: {PlantId} increased by 25. New total: {GrowthPoints}", plantId, plant.GrowthPoints);
+            await _context.SaveChangesAsync();
         }
     }
 }

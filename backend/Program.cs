@@ -14,6 +14,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Services
 builder.Services.AddScoped<IPlantService, PlantService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Hangfire Services
 builder.Services.AddHangfire(config => config
